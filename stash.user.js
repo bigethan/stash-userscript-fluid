@@ -10,61 +10,22 @@
 
 (function ($) {
 
-  var unreadCount = 0,
-      watchAuthors = ["Marie Curie", "Susan B. Anthony", "Virginia Wolfe"],
-      watchReviewers = ['Your Name'];
-      pullsUrls = [
-        'http://path-to-your-stash-repo/pull-requests'
-       ,'http://path-to-your-other-stash-repo/pull-requests'
-      ];
+  var baseUrl = "http://your-stash-host/rest/inbox/latest/pull-requests/count";
 
   var getUsersPullRequests = function() {
     var prevOpen = parseInt(localStorage.getItem('userPulls'), 10)
       , currentOpen = 0
     ;
     localStorage.setItem('userPulls', 0);
-    pullsUrls.forEach(function(url, key, arr){
-      $.get(url, { cb :  Date.now() }, function (data) {
-        var currentPulls
-          , currentOpen
-          , openPulls
-          , bounce
-        ;
-        openPulls = parseUserPullRequests(data);
-        currentPulls = parseInt(localStorage.getItem('userPulls'), 10);
-        currentOpen = openPulls + currentPulls;
-        localStorage.setItem('userPulls', currentOpen);
-        bounce = currentOpen > prevOpen;
-        setBadge(currentOpen, bounce);
-      }, 'html');
-    });
+    $.get(baseUrl, { cb :  Date.now() }, function (data) {
+      currentOpen = parseInt(data.count, 10);
+      console.log(currentOpen);
+      localStorage.setItem('userPulls', currentOpen);
+      bounce = currentOpen > prevOpen;
+      setBadge(currentOpen, bounce);
+    }, 'json');
   };
 
-
-  var parseUserPullRequests = function(data) {
-    var trs = $(data).find(".pull-request-row")
-      , openPulls = 0
-    ;
-
-    $(trs).each(function(i, tr){
-      $tr = $(tr);
-      var authors = $tr.find('td.author img')
-        , reviewers = $tr.find('td.reviewers img')
-      ;
-      authors.each(function(){
-        if($.inArray(this.title, watchAuthors) != -1) {
-          openPulls++;
-        }
-      });
-      reviewers.each(function(){
-        if($.inArray(this.title, watchReviewers) != -1) {
-          openPulls++;
-        }
-      });
-
-    });
-    return openPulls;
-  };
 
   var setBadge = function(badgeString, bounce)
   {
@@ -76,11 +37,7 @@
     }
   };
 
-
-
   getUsersPullRequests();
+  setInterval( getUsersPullRequests, 90 * 1000);
 
-  setInterval(
-    getUsersPullRequests,
-    90 * 1000);
 })(jQuery);
