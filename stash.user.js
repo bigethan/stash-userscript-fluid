@@ -10,19 +10,18 @@
 
 (function ($) {
 
-  var baseUrl = "http://your-stash-host/rest/inbox/latest/pull-requests/count";
+  var baseUrl = 'http://your-stash-host/rest/inbox/latest/pull-requests/count'
+    , userPullsKey = 'userPulls';
 
-  var getUsersPullRequests = function() {
-    var prevOpen = parseInt(localStorage.getItem('userPulls'), 10)
+  var getUsersPullRequests = function()
+  {
+    var prevOpen = parseInt(localStorage.getItem(userPullsKey), 10)
       , currentOpen = 0
     ;
-    localStorage.setItem('userPulls', 0);
     $.get(baseUrl, { cb :  Date.now() }, function (data) {
       currentOpen = parseInt(data.count, 10);
-      console.log(currentOpen);
-      localStorage.setItem('userPulls', currentOpen);
-      bounce = currentOpen > prevOpen;
-      setBadge(currentOpen, bounce);
+      localStorage.setItem(userPullsKey, currentOpen);
+      setBadge(currentOpen, currentOpen > prevOpen);
     }, 'json');
   };
 
@@ -38,6 +37,6 @@
   };
 
   getUsersPullRequests();
-  setInterval( getUsersPullRequests, 90 * 1000);
+  setInterval( getUsersPullRequests, 30 * 1000);
 
 })(jQuery);
